@@ -54,8 +54,8 @@ app.post("/register", register);
 app.post("/login", login);
 app.post("/createPost", authUser, createPost);
 app.get("/getAllPosts", authUser, getAllPosts);
-app.get("/getFriends", authUser, getFriends);
-app.get("/getPeople", authUser, getPeople);
+app.get("/getFriends", getFriends);
+app.get("/getPeople", getPeople);
 
 const PORT = process.env.PORT || 8000;
 
