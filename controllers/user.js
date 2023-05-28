@@ -64,6 +64,7 @@ exports.register = async (req, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       token: token,
+      friends: user.friends,
       message: "Registeration with Bluedraw success!",
     });
   } catch (error) {
@@ -98,6 +99,7 @@ exports.login = async (req, res) => {
               firstName: user.firstName,
               lastName: user.lastName,
               token: token,
+              friends: user.friends,
             });
           } else {
             return res
@@ -115,10 +117,11 @@ exports.login = async (req, res) => {
 // not tested yet
 exports.addFriend = async (req, res) => {
   try {
-    if (req.user.id !== req.params.id) {
+    if (req.user.id !== req.body.id) {
+      console.log("reached here 2");
       // check that you're not adding yourself as friend
       const sender = await User.findById(req.user.id);
-      const receiver = await User.findById(req.params.id);
+      const receiver = await User.findById(req.body.id);
       if (!receiver.friends.includes(sender._id)) {
         await User.bulkWrite([
           {
@@ -138,8 +141,10 @@ exports.addFriend = async (req, res) => {
             },
           },
         ]);
+        console.log("reached here 3");
         res.json({ message: "Friend has been added" });
       } else {
+        console.log("reached here 4");
         return res.status(400).json({ message: "Already friends" });
       }
     } else {
@@ -153,12 +158,12 @@ exports.addFriend = async (req, res) => {
   }
 };
 
-exports.unfriend = async (req, res) => {
+exports.unFriend = async (req, res) => {
   try {
-    if (req.user.id !== req.params.id) {
+    if (req.user.id !== req.body.id) {
       // check that you're not c\unfriending yourself
       const sender = await User.findById(req.user.id);
-      const receiver = await User.findById(req.params.id);
+      const receiver = await User.findById(req.body.id);
       if (
         receiver.friends.includes(sender._id) &&
         sender.friends.includes(receiver._id)
@@ -209,20 +214,19 @@ exports.search = async (req, res) => {
   }
 };
 
-exports.getFriends = async (req, res) => {
-  try {
-    const friends = await User.findById(req.user.id).select("friends");
-    res.status(200).json({ friends: friends });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 exports.getPeople = async (req, res) => {
   try {
     const people = await User.find();
     res.status(200).json({ people: people });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
+};
+
+exports.getSelf = async (req, res) => {
+  console.log("request arrived");
+  console.log(req.query);
+  const user = await User.find({ username: req.query.user });
+  res.status(200).json({ user });
 };

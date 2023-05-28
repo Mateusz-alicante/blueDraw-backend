@@ -8,10 +8,10 @@ exports.authUser = async (req, res, next) => {
     if (!token) {
       return res.status(400).json({ message: "invalid Authentication" });
     }
-    console.log(temp);
     // check if this is a valid token (does it link to a user?)
     jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
       if (err) {
+        console.log("Reached here");
         return res.status(400).json({ message: "invalid Authentication" });
       }
       req.user = user;
