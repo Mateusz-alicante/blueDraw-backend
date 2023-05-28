@@ -208,3 +208,35 @@ exports.search = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.getFriends = async (req, res) => {
+  try {
+    const validUser = req.user.id; // currently signed in user on browser
+    if (validUser !== user.id) {
+      console.log("reached here");
+      return res
+        .status(400)
+        .json({ message: "Your are not authorized to get friend list" });
+    }
+    const friends = await User.findById(user.id).select("friends");
+    res.status(200).json({ friends: friends });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getPeople = async (req, res) => {
+  try {
+    const validUser = req.user.id; // currently signed in user on browser
+    if (validUser !== user.id) {
+      console.log("reached here");
+      return res
+        .status(400)
+        .json({ message: "Your are not authorized to get people list" });
+    }
+    const people = await User.find();
+    res.status(200).json({ people: people });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

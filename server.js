@@ -41,7 +41,12 @@ mongoose
   );
 
 // routes
-const { register, login } = require("./controllers/user"); // user.js
+const {
+  register,
+  login,
+  getFriends,
+  getPeople,
+} = require("./controllers/user"); // user.js
 const { createPost, getAllPosts } = require("./controllers/post"); // post.js
 const { authUser } = require("./middlewares/auth");
 
@@ -49,6 +54,8 @@ app.post("/register", register);
 app.post("/login", login);
 app.post("/createPost", authUser, createPost);
 app.get("/getAllPosts", authUser, getAllPosts);
+app.get("/getFriends", authUser, getFriends);
+app.get("/getPeople", authUser, getPeople);
 
 const PORT = process.env.PORT || 8000;
 
