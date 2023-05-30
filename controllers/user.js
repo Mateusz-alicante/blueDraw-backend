@@ -79,7 +79,7 @@ exports.login = async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
-    const user = await User.findOne({ firstName: username });
+    const user = await User.findOne({ username: username });
 
     if (!user) {
       // no user found
@@ -141,13 +141,16 @@ exports.addFriend = async (req, res) => {
             },
           },
         ]);
+        result = await User.findById(req.user.id).select("friends");
+        console.log(result);
         console.log("reached here 3");
-        res.json({ message: "Friend has been added" });
+        res.send({ result });
       } else {
         console.log("reached here 4");
         return res.status(400).json({ message: "Already friends" });
       }
     } else {
+      console.log("add self");
       return res
         .status(400)
         .json({ message: "You cannot add yourself as friends" });
@@ -190,7 +193,10 @@ exports.unFriend = async (req, res) => {
             },
           },
         ]);
-        res.json({ message: "Unfriend success" });
+        result = await User.findById(req.user.id).select("friends");
+        console.log(result);
+        console.log("reached here");
+        res.send({ result });
       } else {
         return res.status(400).json({ message: "Already not friends" });
       }
@@ -198,6 +204,7 @@ exports.unFriend = async (req, res) => {
       return res.status(400).json({ message: "You can't unfriend yourself" });
     }
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
