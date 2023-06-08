@@ -20,6 +20,10 @@ const postSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    privacy: {
+      type: String,
+      default: "public",
+    },
   },
   {
     timestamps: true,

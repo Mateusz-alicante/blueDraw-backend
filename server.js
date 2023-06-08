@@ -46,21 +46,22 @@ const {
   register,
   login,
   getPeople,
-  getSelf,
   addFriend,
   unFriend,
 } = require("./controllers/user"); // user.js
-const { createPost, getAllPosts } = require("./controllers/post"); // post.js
+const { createPost, getPosts } = require("./controllers/post"); // post.js
 const { authUser } = require("./middlewares/auth");
+const { uploadImage, uploadImageLink } = require("./controllers/upload");
 
 app.post("/register", register);
 app.post("/login", login);
 app.post("/createPost", authUser, createPost);
-app.get("/getAllPosts", authUser, getAllPosts);
+app.get("/getPosts", authUser, getPosts);
 app.get("/getPeople", getPeople);
-app.post("/getSelf", getSelf);
 app.post("/addFriend", authUser, addFriend);
 app.post("/unFriend", authUser, unFriend);
+app.post("/uploadImage", authUser, uploadImage);
+app.post("/uploadImageLink", authUser, uploadImageLink);
 
 const PORT = process.env.PORT || 8000;
 

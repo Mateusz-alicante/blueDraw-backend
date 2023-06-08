@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     trim: true,
     text: true,
   },
+  email: {
+    type: String,
+    required: [true, "email is required"],
+  },
   username: {
     type: String,
     required: [true, "username is required"],
@@ -31,6 +35,11 @@ const userSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  picture: {
+    type: String,
+    default:
+      "https://res.cloudinary.com/drshlvgnx/image/upload/v1686134198/Hotpot_gvvvfn.png",
+  },
 });
 
 module.exports = mongoose.model("User", userSchema);

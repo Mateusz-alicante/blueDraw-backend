@@ -2,22 +2,17 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User.js");
 const jwt = require("jsonwebtoken");
 
-const { lengthValidation, usernameExists } = require("../helpers/checks");
+const {
+  lengthValidation,
+  usernameExists,
+  emailExists,
+} = require("../helpers/checks");
 
 const { generateToken } = require("../helpers/tokens.js");
 
 exports.register = async (req, res) => {
   try {
-    const { firstName, lastName, password } = req.body;
-
-    // generate username
-    d = new Date();
-    num = Math.floor(d.getTime() * Math.random()).toString();
-    username = firstName + lastName + num.slice(num.length - 2, num.length);
-    while (await User.findOne({ username: username })) {
-      num = Math.floor(d.getTime() * Math.random()).toString();
-      username = firstName + lastName + num.slice(num.length - 2, num.length);
-    }
+    const { firstName, lastName, password, email, username } = req.body;
 
     // check if lengths are okay
     if (!lengthValidation(firstName, 2, 30)) {
@@ -43,6 +38,13 @@ exports.register = async (req, res) => {
       });
     }
 
+    // check if email already exists
+    if (await emailExists(email, User)) {
+      return res.status(400).json({
+        message: "Email already exists, try a different email",
+      });
+    }
+
     // encrypt password
     const cryptedPassword = await bcrypt.hash(password, 12);
 
@@ -52,11 +54,13 @@ exports.register = async (req, res) => {
       lastName: lastName,
       username: username,
       password: cryptedPassword,
+      email: email,
     }).save();
 
     // generate jwt token
     const token = generateToken({ id: user._id.toString() }, "7d");
 
+    console.log("reached end of signup");
     // send back info
     res.send({
       id: user._id,
@@ -65,6 +69,8 @@ exports.register = async (req, res) => {
       lastName: user.lastName,
       token: token,
       friends: user.friends,
+      picture: user.picture,
+      email: email,
       message: "Registeration with Bluedraw success!",
     });
   } catch (error) {
@@ -75,17 +81,16 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    console.log(req.body);
-    const username = req.body.username;
+    const email = req.body.email;
     const password = req.body.password;
 
-    const user = await User.findOne({ username: username });
+    const user = await User.findOne({ email: email });
 
     if (!user) {
       // no user found
       return res
         .status(400)
-        .json({ message: "This username is not connected to an account" });
+        .json({ message: "This email is not connected to an account" });
     } else {
       // compare password with hash in database
       bcrypt.compare(password, user.password, (err, comparison) => {
@@ -100,6 +105,8 @@ exports.login = async (req, res) => {
               lastName: user.lastName,
               token: token,
               friends: user.friends,
+              picture: user.picture,
+              email: email,
             });
           } else {
             return res
@@ -209,31 +216,15 @@ exports.unFriend = async (req, res) => {
   }
 };
 
-exports.search = async (req, res) => {
-  try {
-    const searchTerm = req.params.searchTerm;
-    let users = await User.find({ $text: { $search: searchTerm } }).select(
-      "firstName lastName username"
-    );
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
 exports.getPeople = async (req, res) => {
   try {
-    const people = await User.find();
+    console.log(req.query);
+    const people = await User.find({}).select(
+      "firstName friends id lastName picture token username"
+    );
     res.status(200).json({ people: people });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
   }
-};
-
-exports.getSelf = async (req, res) => {
-  console.log("request arrived");
-  console.log(req.query);
-  const user = await User.find({ username: req.query.user });
-  res.status(200).json({ user });
 };
