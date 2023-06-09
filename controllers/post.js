@@ -50,7 +50,7 @@ exports.getPosts = async (req, res) => {
           {
             $or: [
               { $and: [{ user: { $in: friends } }, { privacy: "friends" }] },
-              { privacy: "public" },
+              { $and: [{ privacy: "public" }, { user: { $ne: req.user.id } }] },
             ],
           },
         ];
