@@ -27,6 +27,7 @@ exports.createPost = async (req, res) => {
 
 exports.getPosts = async (req, res) => {
   try {
+    console.log("reached getposts");
     // construct the object that will allow us to fewtch the correct posts based on the request otions
     let requestOptions;
     let friends;
@@ -41,10 +42,17 @@ exports.getPosts = async (req, res) => {
         ];
         break;
       case "friends":
+        console.log("Reached friends posts");
         friends = await User.findById(req.user.id).select("friends");
         friends = friends.friends;
+        // I know what the problem is friends and public posts don't get displayed
         requestOptions = [
-          { $and: [{ user: { $in: friends } }, { privacy: "friends" }] },
+          {
+            $or: [
+              { $and: [{ user: { $in: friends } }, { privacy: "friends" }] },
+              { privacy: "public" },
+            ],
+          },
         ];
         break;
       case "private":
@@ -63,63 +71,6 @@ exports.getPosts = async (req, res) => {
       .populate("user", "firstName lastName username");
 
     res.json({ posts, hasMore: posts.length == req.query.limit });
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getFriendsPosts = async (req, res) => {
-  try {
-    // find the list of friends of the user that is logged in
-    let friends = await User.findById(req.user.id).select("friends");
-    friends = friends.friends;
-    // get all the non-private posts of the friends
-    const promises = friends.map((user) => {
-      return Post.find({
-        user: user,
-        privacy: { $in: ["friends", "public"] },
-      }).populate("user", "firstName lastName username");
-    });
-
-    // posts is the array of posts to be displayed
-    let posts = await (await Promise.all(promises)).flat();
-
-    // find all personal posts
-    let myPosts = await Post.find({ user: req.user.id }).populate(
-      "user",
-      "firstName lastName username"
-    );
-
-    // append personal posts to posts lists
-    posts.push(...[...myPosts]);
-
-    // sort posts by the date they are created at
-    posts.sort((a, b) => {
-      return b.createdAt - a.createdAt;
-    });
-
-    res.json(posts);
-  } catch (error) {
-    console.log(error.message);
-    return res.status(500).json({ message: error.message });
-  }
-};
-
-exports.getPrivatePosts = async (req, res) => {
-  try {
-    // find all personal posts
-    let myPosts = await Post.find({ user: req.user.id }).populate(
-      "user",
-      "firstName lastName username"
-    );
-
-    // sort posts by the date they are created at
-    myPosts.sort((a, b) => {
-      return b.createdAt - a.createdAt;
-    });
-
-    res.json(myPosts);
   } catch (error) {
     console.log(error.message);
     return res.status(500).json({ message: error.message });

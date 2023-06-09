@@ -12,6 +12,7 @@ const { generateToken } = require("../helpers/tokens.js");
 
 exports.register = async (req, res) => {
   try {
+    console.log("reached register");
     const { firstName, lastName, password, email, username } = req.body;
 
     // check if lengths are okay
@@ -73,6 +74,7 @@ exports.register = async (req, res) => {
       email: email,
       message: "Registeration with Bluedraw success!",
     });
+    console.log("reached end of register");
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: error.message });
@@ -81,6 +83,7 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
+    console.log("reached login");
     const email = req.body.email;
     const password = req.body.password;
 
@@ -98,6 +101,7 @@ exports.login = async (req, res) => {
           if (comparison) {
             // correct password
             const token = generateToken({ id: user._id.toString() }, "7d");
+            console.log("reached end of login");
             res.send({
               id: user._id,
               username: user.username,
